@@ -1,0 +1,5 @@
+(await (await fetch('https://adventofcode.com/2022/day/4/input')).text())
+.split('\n')
+.filter(Boolean)
+.map(x => x.split(',').map(x => x.split('-').map(x => +x)))
+.reduce((a,[[b,c],[d,e]])=>((b>=d&&c<=e)||(d>=b&&e<=c))?a+1:a,0)
