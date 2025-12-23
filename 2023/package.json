@@ -1,0 +1,14 @@
+{
+  "name": "2023",
+  "version": "1.0.0",
+  "description": "",
+  "main": "day01-1.js",
+  "scripts": {
+    "test": "jest"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "jest": "^29.7.0"
+  }
+}
