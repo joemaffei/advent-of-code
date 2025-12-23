@@ -1,0 +1,11 @@
+// Comparison operators
+x = 5
+y = 3
+eq = x == 5
+ne = x == 3
+lt = x < 10
+gt = x > 2
+lte = x <= 5
+gte = x >= 5
+
+eq

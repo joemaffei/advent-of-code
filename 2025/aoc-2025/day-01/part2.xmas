@@ -1,0 +1,98 @@
+// Day 1, Part 2: Safe Dial Password (Method 0x434C49434B)
+// Count how many times the dial points at 0 DURING rotations (not just at the end)
+// Dial starts at 50, goes from 0-99 (circular)
+
+// Helper function to convert array of character strings to number
+charsToNum(chars) = {
+    str = for(c of chars, { _ = _ + c }, "")
+    _ = ~str
+}
+
+// Helper function to get direction from a line
+getDirection(line) = line[0]
+
+// Helper function to get amount from a line
+getAmount(line) = {
+    numChars = line[1..]
+    _ = charsToNum(numChars)
+}
+
+// Helper function to generate all positions visited during a rotation (excluding start)
+getPositionsVisited(pos, direction, amount) = {
+    // Generate array of positions visited: [pos±1, pos±2, ..., pos±amount]
+    positions = if(direction == "L", {
+        // Left: generate [pos-1, pos-2, ..., pos-amount] (mod 100)
+        // Create range and apply modulo
+        rawPositions = for(i of [1..amount], {
+            raw = pos - i
+            wrapped = if(raw < 0, raw + 100, raw) % 100
+            _ = _ + [wrapped]
+        }, [])
+        _ = rawPositions
+    }, {
+        // Right: generate [pos+1, pos+2, ..., pos+amount] (mod 100)
+        rawPositions = for(i of [1..amount], {
+            wrapped = (pos + i) % 100
+            _ = _ + [wrapped]
+        }, [])
+        _ = rawPositions
+    })
+    _ = positions
+}
+
+// Helper function to count zeros in an array
+countZeros(arr) = {
+    count = for(p of arr, {
+        _ = _ + if(p == 0, 1, 0)
+    }, 0)
+    _ = count
+}
+
+// Helper function to count zeros during a rotation
+countZerosDuringRotation(pos, direction, amount) = {
+    // Calculate new position after rotation
+    newPos = if(direction == "L", {
+        raw = pos - amount
+        _ = if(raw < 0, raw + 100, raw) % 100
+    }, {
+        _ = (pos + amount) % 100
+    })
+
+    // Get all positions visited (excluding start)
+    positions = getPositionsVisited(pos, direction, amount)
+    // Count zeros in those positions
+    zeroCount = countZeros(positions)
+
+    _ = [newPos, zeroCount]
+}
+
+// Helper function to process one line and update state [position, totalCount]
+processLine(state, line) = {
+    currentPos = state[0]
+    currentCount = state[1]
+
+    direction = getDirection(line)
+    amount = getAmount(line)
+
+    result = countZerosDuringRotation(currentPos, direction, amount)
+    newPos = result[0]
+    zerosThisRotation = result[1]
+
+    _ = [newPos, currentCount + zerosThisRotation]
+}
+
+// Build indices array using range literal
+lenResult = len(input)
+numLines = lenResult[0]
+indices = [0..numLines - 1]
+
+// Process each line using the indices
+initialState = [50, 0]
+finalState = for(i of indices, {
+    line = input[i]
+    _ = processLine(_, line)
+}, initialState)
+
+// Extract the count (password)
+password = finalState[1]
+password

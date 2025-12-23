@@ -1,0 +1,7 @@
+// Array slicing operations
+arr = [0, 1, 2, 3, 4, 5]
+slice1 = arr[1..4]
+slice2 = arr[2..]
+slice3 = arr[..3]
+
+slice1

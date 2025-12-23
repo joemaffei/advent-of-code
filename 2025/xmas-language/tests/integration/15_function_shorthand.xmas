@@ -1,0 +1,5 @@
+// Function shorthand (expression body)
+addOne(x) = x + 1
+result = addOne(5)
+
+result

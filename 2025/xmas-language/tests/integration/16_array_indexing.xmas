@@ -1,0 +1,7 @@
+// Array indexing
+arr = [10, 20, 30, 40, 50]
+first = arr[0]
+middle = arr[2]
+last = arr[4]
+
+middle

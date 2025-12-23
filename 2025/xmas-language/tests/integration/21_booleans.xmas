@@ -1,0 +1,7 @@
+// Boolean literals and operations
+x = true
+y = false
+z = x == y
+w = x == x
+
+w

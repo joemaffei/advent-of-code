@@ -1,0 +1,6 @@
+// String indexing (strings are arrays of characters)
+str = "hello"
+first_char = str[0]
+third_char = str[2]
+
+third_char

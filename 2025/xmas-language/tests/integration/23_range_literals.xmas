@@ -1,0 +1,7 @@
+// Range literals
+range1 = [0..5]
+range2 = [10..15]
+range3 = [5..0]
+single = [3..3]
+
+single

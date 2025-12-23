@@ -1,0 +1,7 @@
+// Built-in len function
+arr1d = [1, 2, 3, 4, 5]
+str = "hello"
+len1d = len(arr1d)
+len_str = len(str)
+
+len1d

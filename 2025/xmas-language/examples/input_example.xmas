@@ -1,0 +1,4 @@
+// Example using input
+// Run with: xmas input_example.xmas -i input.txt
+first_line = input[0]
+len(first_line)

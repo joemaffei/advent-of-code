@@ -1,0 +1,6 @@
+// Type conversion
+str_num = "123"
+num = ~str_num
+doubled = num * 2
+
+doubled

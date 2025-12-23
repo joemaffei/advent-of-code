@@ -1,0 +1,6 @@
+// Nested function calls
+add(a, b) = { _ = a + b }
+double(x) = { _ = x * 2 }
+result = double(add(5, 10))
+
+result

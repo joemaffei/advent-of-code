@@ -1,0 +1,6 @@
+// Complex nested expressions
+x = 10
+y = 5
+result = if(x > y, x * 2, y * 2) + 5
+
+result

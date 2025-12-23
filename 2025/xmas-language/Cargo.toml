@@ -1,0 +1,14 @@
+[package]
+name = "xmas-language"
+version = "0.1.0"
+edition = "2021"
+
+[lib]
+name = "xmas_language"
+path = "src/lib.rs"
+
+[dependencies]
+
+[[bin]]
+name = "xmas"
+path = "src/main.rs"

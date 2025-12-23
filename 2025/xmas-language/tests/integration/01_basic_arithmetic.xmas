@@ -1,0 +1,11 @@
+// Basic arithmetic operations
+a = 5
+b = 3
+sum = a + b
+product = a * b
+difference = a - b
+quotient = a / b
+remainder = a % b
+
+// Output sum as final result
+sum

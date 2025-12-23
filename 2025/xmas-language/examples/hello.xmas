@@ -1,0 +1,3 @@
+// Simple hello world example
+message = "Hello, xmas language!"
+message

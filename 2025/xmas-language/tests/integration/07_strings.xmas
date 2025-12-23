@@ -1,0 +1,7 @@
+// String operations
+hello = "Hello"
+world = "World"
+combined = hello + " " + world
+length = len(combined)
+
+length

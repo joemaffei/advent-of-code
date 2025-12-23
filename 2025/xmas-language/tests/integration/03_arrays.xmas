@@ -1,0 +1,8 @@
+// Array operations
+arr = [1, 2, 3, 4, 5]
+first = arr[0]
+last = arr[4]
+slice = arr[1..4]
+concatenated = [1, 2] + [3, 4]
+
+concatenated

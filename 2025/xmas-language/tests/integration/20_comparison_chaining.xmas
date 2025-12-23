@@ -1,0 +1,9 @@
+// Multiple comparisons
+x = 5
+y = 10
+z = 15
+result1 = x < y
+result2 = y < z
+result3 = x < z
+
+result3

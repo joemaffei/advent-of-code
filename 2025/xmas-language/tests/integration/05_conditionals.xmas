@@ -1,0 +1,6 @@
+// Conditional expressions
+x = 3
+result1 = if(x == 3, 100, 200)
+result2 = if(x == 5, 100, 200)
+
+result2

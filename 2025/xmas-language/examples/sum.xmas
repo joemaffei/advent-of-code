@@ -1,0 +1,4 @@
+// Sum numbers in an array
+arr = [1, 2, 3, 4, 5]
+sum = for(n of arr, { _ = _ + n }, 0)
+sum
