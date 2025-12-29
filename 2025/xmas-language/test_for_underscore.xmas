@@ -1,0 +1,10 @@
+// Test assignment with indexing in function called from for loop with _
+testFunc(state) = {
+    currentPos = state[0]
+    _ = [currentPos, 0]
+}
+indices = [0]
+finalState = for(i of indices, {
+    _ = testFunc(_)
+}, [50, 0])
+finalState[0]

@@ -1,0 +1,5 @@
+// Test if expression with arithmetic
+x = 10
+y = 5
+result = if(true, x - y, x + y)
+result

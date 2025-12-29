@@ -1,0 +1,11 @@
+// Test if expression with type conversion
+charsToNum(chars) = {
+    str = for(c of chars, { _ = _ + c }, "")
+    _ = ~str
+}
+chars = ["6", "8"]
+amount = charsToNum(chars)
+x = 10
+dir = "L"
+result = if(dir == "L", x - amount, x + amount)
+result

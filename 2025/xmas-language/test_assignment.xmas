@@ -1,0 +1,7 @@
+// Test assignment with indexing
+testFunc(state) = {
+    currentPos = state[0]
+    _ = currentPos
+}
+result = testFunc([50, 0])
+result

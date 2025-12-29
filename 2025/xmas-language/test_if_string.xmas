@@ -1,0 +1,6 @@
+// Test if expression with string comparison and arithmetic
+dir = "L"
+x = 10
+y = 5
+result = if(dir == "L", x - y, x + y)
+result

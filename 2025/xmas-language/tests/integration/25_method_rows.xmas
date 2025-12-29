@@ -1,0 +1,7 @@
+// Test the .rows() method on 2D arrays
+// Use input as a 2D array and convert it to 1D array of rows
+rows = input.rows()
+
+// rows should be a 1D array containing all rows from input
+// Each row should be a 1D array
+len(rows)

@@ -1,0 +1,20 @@
+// Test if expression inside function with parameters
+charsToNum(chars) = {
+    str = for(c of chars, { _ = _ + c }, "")
+    _ = ~str
+}
+getAmount(line) = {
+    numChars = line[1..]
+    _ = charsToNum(numChars)
+}
+processLine(state, line) = {
+    currentPos = state[0]
+    direction = line[0]
+    amount = getAmount(line)
+    newPos = if(direction == "L", currentPos - amount, currentPos + amount)
+    _ = newPos
+}
+line = ["L", "6", "8"]
+state = [10, 0]
+result = processLine(state, line)
+result

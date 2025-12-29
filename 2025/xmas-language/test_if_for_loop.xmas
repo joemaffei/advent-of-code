@@ -1,0 +1,23 @@
+// Test if expression inside function called from for loop
+charsToNum(chars) = {
+    str = for(c of chars, { _ = _ + c }, "")
+    _ = ~str
+}
+getAmount(line) = {
+    numChars = line[1..]
+    _ = charsToNum(numChars)
+}
+processLine(state, line) = {
+    currentPos = state[0]
+    direction = line[0]
+    amount = getAmount(line)
+    newPos = if(direction == "L", currentPos - amount, currentPos + amount)
+    _ = [newPos, 0]
+}
+lines = [["L", "6", "8"]]
+indices = [0]
+finalState = for(i of indices, {
+    line = lines[i]
+    _ = processLine(_, line)
+}, [10, 0])
+finalState[0]

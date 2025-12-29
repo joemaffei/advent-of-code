@@ -1,0 +1,7 @@
+// Test if expression with array indexing and arithmetic
+state = [10, 0]
+dir = "L"
+y = 5
+x = state[0]
+result = if(dir == "L", x - y, x + y)
+result

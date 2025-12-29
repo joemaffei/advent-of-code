@@ -1,0 +1,28 @@
+// Test that closely matches part1.xmas
+charsToNum(chars) = {
+    str = for(c of chars, { _ = _ + c }, "")
+    _ = ~str
+}
+getDirection(line) = line[0]
+getAmount(line) = {
+    numChars = line[1..]
+    _ = charsToNum(numChars)
+}
+processLine(state, line) = {
+    currentPos = state[0]
+    currentHits = state[1]
+    direction = getDirection(line)
+    amount = getAmount(line)
+    newPos = if(direction == "L", currentPos - amount, currentPos + amount)
+    newHits = if(newPos % 100 == 0, currentHits + 1, currentHits)
+    _ = [newPos, newHits]
+}
+// Simulate input as a variable
+lines = [["L", "6", "8"], ["L", "3", "0"]]
+numLines = len(lines)[0]
+indices = [0..numLines - 1]
+finalState = for(i of indices, {
+    line = lines[i]
+    _ = processLine(_, line)
+}, [50, 0])
+finalState[1]

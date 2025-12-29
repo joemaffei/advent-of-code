@@ -1,0 +1,8 @@
+// Test if expression with function calls and arithmetic
+getX() = 10
+getY() = 5
+dir = "L"
+x = getX()
+y = getY()
+result = if(dir == "L", x - y, x + y)
+result

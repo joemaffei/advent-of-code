@@ -100,11 +100,38 @@ cargo run --bin xmas -- process.xmas -i input.txt
 ## Command Line Options
 
 ```
-xmas [file.xmas] [-i|--input input.txt]
+xmas [file.xmas] [-i|--input input.txt] [-d|--debug]
 
 Arguments:
   file.xmas          Path to xmas source file (or read from stdin if omitted)
   -i, --input FILE   Path to input file for the `input` variable
+  -d, --debug        Enable debug mode (prints execution trace to stderr)
+```
+
+### Debug Mode
+
+The `-d` or `--debug` flag enables verbose debug output that shows:
+
+- **Variable assignments**: When variables are assigned or updated
+- **Operations**: Arithmetic and logical operations with before/after values
+- **Conditionals**: `if` statement conditions and their results
+- **Loops**: `for` loop iterations showing the current element
+
+Debug output is printed to `stderr`, so it won't interfere with program output on `stdout`.
+
+Example:
+
+```bash
+cargo run --bin xmas -- program.xmas -i input.txt --debug
+```
+
+Debug output looks like:
+```
+DEBUG: x: 0 → 5
+DEBUG:   if (x == 5): true
+DEBUG:   for n: 1
+DEBUG:   for n: 2
+DEBUG:   for n: 3
 ```
 
 ## Installation (Optional)

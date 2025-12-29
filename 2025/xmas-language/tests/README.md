@@ -46,7 +46,9 @@ Tests string operations and concatenation
 - Expected output: `11` (length of "Hello World")
 
 ### 08_type_conversion.xmas
-Tests the `~` operator for string-to-number conversion
+Tests the `~` operator for type conversion:
+- String-to-number conversion: `~"123"` → `123`
+- Boolean-to-number conversion: `~true` → `1`, `~false` → `0`
 - Expected output: `246` (~"123" * 2)
 
 ### 09_builtin_len.xmas

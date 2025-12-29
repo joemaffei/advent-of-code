@@ -40,22 +40,26 @@ fn main() {
     let input_file = args.iter().position(|a| a == "-i" || a == "--input")
         .and_then(|i| args.get(i + 1));
 
+    // Check for debug flag
+    let debug = args.iter().any(|a| a == "-d" || a == "--debug");
+
     // Step 1: Tokenize
     let mut lexer = Lexer::new(&code);
     let tokens = lexer.tokenize();
 
     // Step 2: Parse
-    let mut parser = Parser::new(tokens);
+    let mut parser = Parser::new(tokens, code.clone());
     let program = match parser.parse() {
         Ok(ast) => ast,
         Err(e) => {
-            eprintln!("Parse error: {}", e);
+            eprintln!("{}", e);
             std::process::exit(1);
         }
     };
 
     // Step 3: Interpret
     let mut interpreter = Interpreter::new();
+    interpreter.set_debug(debug);
 
     // Set input if provided
     if let Some(input_path) = input_file {

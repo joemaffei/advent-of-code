@@ -13,33 +13,11 @@ fn run_xmas_file(file_path: &str) -> Result<(Value, Interpreter), String> {
 
     let mut lexer = Lexer::new(&code);
     let tokens = lexer.tokenize();
-    let mut parser = Parser::new(tokens);
+    let mut parser = Parser::new(tokens, code);
     let program = parser.parse()?;
     let mut interpreter = Interpreter::new();
     let result = interpreter.interpret(&program)?;
     Ok((result, interpreter))
-}
-
-/// Format a value for comparison
-fn format_value(value: &Value) -> String {
-    match value {
-        Value::Number(n) => format!("{}", n),
-        Value::Boolean(b) => format!("{}", b),
-        Value::String(s) => s.clone(),
-        Value::Array1D(arr) => {
-            let items: Vec<String> = arr.iter().map(format_value).collect();
-            format!("[{}]", items.join(", "))
-        }
-        Value::Array2D(arr) => {
-            let rows: Vec<String> = arr.iter()
-                .map(|row| {
-                    let items: Vec<String> = row.iter().map(format_value).collect();
-                    format!("[{}]", items.join(", "))
-                })
-                .collect();
-            format!("[{}]", rows.join(", "))
-        }
-    }
 }
 
 #[test]
@@ -175,6 +153,10 @@ fn test_08_type_conversion() {
     assert_eq!(interpreter.variables.get("str_num"), Some(&Value::String("123".to_string())), "str_num should be '123'");
     assert_eq!(interpreter.variables.get("num"), Some(&Value::Number(123)), "num = ~'123' = 123");
     assert_eq!(interpreter.variables.get("doubled"), Some(&Value::Number(246)), "doubled = 123 * 2 = 246");
+
+    // Verify boolean conversion
+    assert_eq!(interpreter.variables.get("bool_true"), Some(&Value::Number(1)), "bool_true = ~true = 1");
+    assert_eq!(interpreter.variables.get("bool_false"), Some(&Value::Number(0)), "bool_false = ~false = 0");
 }
 
 #[test]
@@ -467,4 +449,38 @@ fn test_24_integer_division() {
     assert_eq!(interpreter.variables.get("b"), Some(&Value::Number(3)), "b = 7 / 2 = 3 (integer division)");
     assert_eq!(interpreter.variables.get("c"), Some(&Value::Number(3)), "c = 15 / 4 = 3 (integer division)");
     assert_eq!(interpreter.variables.get("d"), Some(&Value::Number(4)), "d = 20 / 5 = 4");
+}
+
+#[test]
+fn test_25_method_rows() {
+    let code = fs::read_to_string("tests/integration/25_method_rows.xmas")
+        .map_err(|e| format!("Failed to read file: {}", e)).unwrap();
+
+    let mut lexer = Lexer::new(&code);
+    let tokens = lexer.tokenize();
+    let mut parser = Parser::new(tokens, code);
+    let program = parser.parse().unwrap();
+    let mut interpreter = Interpreter::new();
+    // Set input with 3 lines
+    interpreter.set_input("abc\ndef\nghi");
+    let result = interpreter.interpret(&program).unwrap();
+
+    // Check final output - should be length of rows (3)
+    assert_eq!(result, Value::Number(3), "Expected len(rows) = 3");
+
+    // Verify that rows is a 1D array with 3 elements
+    if let Some(Value::Array1D(rows)) = interpreter.variables.get("rows") {
+        assert_eq!(rows.len(), 3, "rows should have 3 elements");
+        // Each element should be a 1D array (a row)
+        for row in rows.iter() {
+            match row {
+                Value::Array1D(row_arr) => {
+                    assert_eq!(row_arr.len(), 3, "Each row should have 3 characters");
+                }
+                _ => panic!("Each row should be a 1D array"),
+            }
+        }
+    } else {
+        panic!("rows should be a 1D array");
+    }
 }

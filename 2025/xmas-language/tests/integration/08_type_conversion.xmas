@@ -3,4 +3,8 @@ str_num = "123"
 num = ~str_num
 doubled = num * 2
 
+// Boolean conversion: true -> 1, false -> 0
+bool_true = ~true
+bool_false = ~false
+
 doubled

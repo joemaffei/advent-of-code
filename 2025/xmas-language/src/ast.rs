@@ -75,6 +75,13 @@ pub enum Expr {
         args: Vec<Expr>,
     },
 
+    /// Method call: `array.rows()`
+    MethodCall {
+        object: Box<Expr>,
+        method: String,
+        args: Vec<Expr>,
+    },
+
     /// Block expression: `{ x = 5; y = 10 }`
     Block(Vec<Stmt>),
 }
@@ -88,8 +95,16 @@ pub enum Stmt {
         value: Expr,
     },
 
-    /// Return value assignment: `_ = x + y`
+    /// Assignment operator: `x += 5`, `x -= 5`, etc.
+    AssignOp {
+        name: String,
+        op: BinaryOp,
+        value: Expr,
+    },
+
+    /// Return value assignment: `_ = x + y` or `_name = x + y`
     Return {
+        name: Option<String>,  // None for `_`, Some(name) for `_name`
         value: Expr,
     },
 

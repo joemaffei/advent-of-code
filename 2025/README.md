@@ -118,7 +118,7 @@ cargo run -- ../aoc-2025/day-01/part1.xmas < ../aoc-2025/day-01/input.txt
 
 ## Language Documentation
 
-- **Full Specification**: See `xmas-language/SPECIFICATIONS_v0.2.md`
+- **Full Specification**: See `xmas-language/SPECIFICATIONS_v0.3.md`
 - **Implementation Details**: See `xmas-language/README.md`
 - **Usage Guide**: See `xmas-language/USAGE.md`
 
@@ -143,6 +143,8 @@ cargo run -- ../aoc-2025/day-01/part1.xmas < ../aoc-2025/day-01/input.txt
 - Range literals
 - Booleans and logical operators
 - Integer division
+- `.rows()` method for 2D arrays
+- String concatenation
 
 ### AoC Solutions
 

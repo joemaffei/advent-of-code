@@ -17,7 +17,7 @@ fn run_xmas_solution(program_path: &str, input_path: &str) -> Result<Value, Stri
 
     let mut lexer = Lexer::new(&code);
     let tokens = lexer.tokenize();
-    let mut parser = Parser::new(tokens);
+    let mut parser = Parser::new(tokens, code);
     let program = parser.parse()?;
     let mut interpreter = Interpreter::new();
     interpreter.set_input(&input);

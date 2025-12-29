@@ -5,20 +5,22 @@
 /// and organizes it into a tree structure.
 
 use crate::ast::*;
-use crate::lexer::Token;
+use crate::lexer::{Token, TokenPos};
 
 /// The parser converts a stream of tokens into an AST.
 pub struct Parser {
-    /// The tokens to parse
-    tokens: Vec<Token>,
+    /// The tokens to parse with their positions
+    tokens: Vec<(Token, TokenPos)>,
     /// Current position in the token stream
     current: usize,
+    /// Source code for error messages
+    source: String,
 }
 
 impl Parser {
-    /// Create a new parser from a vector of tokens.
-    pub fn new(tokens: Vec<Token>) -> Self {
-        Parser { tokens, current: 0 }
+    /// Create a new parser from a vector of tokens with positions and source code.
+    pub fn new(tokens: Vec<(Token, TokenPos)>, source: String) -> Self {
+        Parser { tokens, current: 0, source }
     }
 
     /// Parse a complete program (list of statements).
@@ -77,7 +79,7 @@ impl Parser {
             }
         }
 
-        // Check for assignment: name = ... or _ = ...
+        // Check for assignment: name = ... or name += ... or _ = ... or _name = ...
         if self.check_identifier() || self.check(Token::Underscore) {
             let name = if self.check(Token::Underscore) {
                 self.advance();
@@ -86,16 +88,52 @@ impl Parser {
                 if let Token::Identifier(name) = self.advance() {
                     name
                 } else {
-                    return Err("Expected identifier".to_string());
+                    return Err(self.error("Expected identifier"));
                 }
             };
+
+            // Check if this is a named return (starts with _ but isn't just _)
+            let is_named_return = name.starts_with('_') && name.len() > 1;
+            let return_name = if is_named_return {
+                Some(name[1..].to_string())  // Extract name after _
+            } else if name == "_" {
+                None  // Unnamed return
+            } else {
+                None  // Regular variable
+            };
+
+            // Check for assignment operators: +=, -=, *=, /=, %=
+            let assignment_op = if self.check(Token::PlusEqual) {
+                self.advance();
+                Some(BinaryOp::Plus)
+            } else if self.check(Token::MinusEqual) {
+                self.advance();
+                Some(BinaryOp::Minus)
+            } else if self.check(Token::StarEqual) {
+                self.advance();
+                Some(BinaryOp::Star)
+            } else if self.check(Token::SlashEqual) {
+                self.advance();
+                Some(BinaryOp::Slash)
+            } else if self.check(Token::PercentEqual) {
+                self.advance();
+                Some(BinaryOp::Percent)
+            } else {
+                None
+            };
+
+            if let Some(op) = assignment_op {
+                // Assignment operator: x += 5
+                let value = self.parse_expression()?;
+                return Ok(Stmt::AssignOp { name, op, value });
+            }
 
             if self.check(Token::Equals) {
                 self.advance();
                 let value = self.parse_expression()?;
 
-                if name == "_" {
-                    return Ok(Stmt::Return { value });
+                if name == "_" || is_named_return {
+                    return Ok(Stmt::Return { name: return_name, value });
                 } else {
                     return Ok(Stmt::Assign { name, value });
                 }
@@ -116,7 +154,7 @@ impl Parser {
         let name = if let Token::Identifier(name) = self.advance() {
             name
         } else {
-            return Err("Expected function name".to_string());
+            return Err(self.error("Expected function name"));
         };
 
         // Parse parameters
@@ -128,7 +166,7 @@ impl Parser {
                 if let Token::Identifier(param) = self.advance() {
                     params.push(param);
                 } else {
-                    return Err("Expected parameter name".to_string());
+                    return Err(self.error("Expected parameter name"));
                 }
 
                 if !self.check(Token::Comma) {
@@ -294,7 +332,7 @@ impl Parser {
         self.skip_whitespace_and_comments();
 
         if self.is_at_end() {
-            return Err("Unexpected end of input".to_string());
+            return Err(self.error("Unexpected end of input"));
         }
 
         // Check if identifier before advancing (to handle function calls)
@@ -336,6 +374,7 @@ impl Parser {
                     let mut temp_parser = Parser {
                         tokens: self.tokens.clone(),
                         current: self.current,
+                        source: self.source.clone(),
                     };
                     // Skip whitespace
                     temp_parser.skip_whitespace_and_comments();
@@ -419,48 +458,71 @@ impl Parser {
                 self.parse_indexing(expr)
             }
             Token::If => {
-                // Conditional: if(condition, trueBlock, falseBlock)
+                // Conditional: if(condition, trueBlock, falseBlock?)
+                // The falseBlock is optional
                 self.consume(Token::LeftParen, "Expected '(' after 'if'")?;
                 let condition = self.parse_expression()?;
                 self.consume(Token::Comma, "Expected ',' after condition")?;
                 let true_block = self.parse_expression()?;
-                self.consume(Token::Comma, "Expected ',' after true block")?;
-                let false_block = self.parse_expression()?;
+
+                // Check if there's a comma (indicating a false block) or right paren (end of if)
+                let false_block = if self.check(Token::Comma) {
+                    self.advance(); // consume comma
+                    Some(self.parse_expression()?)
+                } else {
+                    None
+                };
+
                 self.consume(Token::RightParen, "Expected ')' after if expression")?;
 
                 // Represent if as a builtin call for now
+                let mut args = vec![condition, true_block];
+                if let Some(fb) = false_block {
+                    args.push(fb);
+                }
                 Ok(Expr::Builtin {
                     name: "if".to_string(),
-                    args: vec![condition, true_block, false_block],
+                    args,
                 })
             }
             Token::For => {
-                // Loop: for(variable of array, block, initialValue)
+                // Loop: for(variable of array, block, initialValue?)
+                // initialValue is optional - if not provided, the loop doesn't return anything
                 self.consume(Token::LeftParen, "Expected '(' after 'for'")?;
 
                 let var_name = if let Token::Identifier(name) = self.advance() {
                     name
                 } else {
-                    return Err("Expected variable name after 'for'".to_string());
+                    return Err(self.error("Expected variable name after 'for'"));
                 };
 
                 self.consume(Token::Of, "Expected 'of' after variable name")?;
                 let array = self.parse_expression()?;
                 self.consume(Token::Comma, "Expected ',' after array")?;
                 let block = self.parse_expression()?;
-                self.consume(Token::Comma, "Expected ',' after block")?;
-                let initial = self.parse_expression()?;
+
+                // Check if there's a comma (indicating an initial value) or right paren (end of for)
+                let initial = if self.check(Token::Comma) {
+                    self.advance(); // consume comma
+                    Some(self.parse_expression()?)
+                } else {
+                    None
+                };
+
                 self.consume(Token::RightParen, "Expected ')' after for expression")?;
 
                 // Represent for as a builtin call for now
+                let mut args = vec![
+                    Expr::Identifier(var_name),
+                    array,
+                    block,
+                ];
+                if let Some(init) = initial {
+                    args.push(init);
+                }
                 Ok(Expr::Builtin {
                     name: "for".to_string(),
-                    args: vec![
-                        Expr::Identifier(var_name),
-                        array,
-                        block,
-                        initial,
-                    ],
+                    args,
                 })
             }
             Token::Len => {
@@ -473,7 +535,7 @@ impl Parser {
                     args: vec![arg],
                 })
             }
-            _ => Err(format!("Unexpected token: {:?}", token)),
+            _ => Err(self.error(&format!("Unexpected token: {:?}", token))),
         }
     }
 
@@ -556,6 +618,38 @@ impl Parser {
             };
         }
 
+        // Handle method calls: array.rows()
+        while self.check(Token::Dot) {
+            self.advance(); // consume '.'
+
+            let method_name = if let Token::Identifier(name) = self.advance() {
+                name
+            } else {
+                return Err(self.error("Expected method name after '.'"));
+            };
+
+            self.consume(Token::LeftParen, "Expected '(' after method name")?;
+
+            let mut args = Vec::new();
+            if !self.check(Token::RightParen) {
+                loop {
+                    args.push(self.parse_expression()?);
+                    if !self.check(Token::Comma) {
+                        break;
+                    }
+                    self.advance(); // consume comma
+                }
+            }
+
+            self.consume(Token::RightParen, "Expected ')' after method arguments")?;
+
+            current_expr = Expr::MethodCall {
+                object: Box::new(current_expr),
+                method: method_name,
+                args,
+            };
+        }
+
         Ok(current_expr)
     }
 
@@ -571,7 +665,16 @@ impl Parser {
         if self.is_at_end() {
             None
         } else {
-            Some(&self.tokens[self.current])
+            Some(&self.tokens[self.current].0)
+        }
+    }
+
+    /// Get the current token position without advancing.
+    fn peek_pos(&self) -> Option<TokenPos> {
+        if self.is_at_end() {
+            None
+        } else {
+            Some(self.tokens[self.current].1)
         }
     }
 
@@ -587,6 +690,37 @@ impl Parser {
         }
     }
 
+    /// Create a formatted error message with position information.
+    fn error(&self, message: &str) -> String {
+        if let Some(pos) = self.peek_pos() {
+            self.format_error(message, pos)
+        } else {
+            format!("Parse error: {} (at end of input)", message)
+        }
+    }
+
+    /// Format an error message with line/column and source line with caret.
+    fn format_error(&self, message: &str, pos: TokenPos) -> String {
+        let lines: Vec<&str> = self.source.lines().collect();
+        if pos.line > 0 && pos.line <= lines.len() {
+            let line_content = lines[pos.line - 1];
+            let caret_pos = if pos.column > 0 && pos.column <= line_content.len() {
+                pos.column - 1
+            } else if pos.column > line_content.len() {
+                line_content.len()
+            } else {
+                0
+            };
+            let caret = " ".repeat(caret_pos) + "^";
+            format!(
+                "Parse error: {} (line {}, column {})\n{}\n{}",
+                message, pos.line, pos.column, line_content, caret
+            )
+        } else {
+            format!("Parse error: {} (line {}, column {})", message, pos.line, pos.column)
+        }
+    }
+
     /// Check if current token is an identifier.
     fn check_identifier(&self) -> bool {
         matches!(self.peek(), Some(Token::Identifier(_)))
@@ -597,7 +731,7 @@ impl Parser {
         if self.current + 1 >= self.tokens.len() {
             false
         } else {
-            match (&self.tokens[self.current + 1], &token) {
+            match (&self.tokens[self.current + 1].0, &token) {
                 (Token::Number(_), Token::Number(_)) => true,
                 (Token::String(_), Token::String(_)) => true,
                 (Token::Identifier(_), Token::Identifier(_)) => true,
@@ -612,7 +746,7 @@ impl Parser {
         if !self.is_at_end() {
             self.current += 1;
         }
-        self.tokens[self.current - 1].clone()
+        self.tokens[self.current - 1].0.clone()
     }
 
     /// Consume a token, error if it doesn't match.
@@ -621,7 +755,7 @@ impl Parser {
             self.advance();
             Ok(())
         } else {
-            Err(message.to_string())
+            Err(self.error(message))
         }
     }
 
@@ -670,7 +804,7 @@ mod tests {
     fn parse_code(code: &str) -> Result<Program, String> {
         let mut lexer = Lexer::new(code);
         let tokens = lexer.tokenize();
-        let mut parser = Parser::new(tokens);
+        let mut parser = Parser::new(tokens, code.to_string());
         parser.parse()
     }
 
@@ -853,7 +987,8 @@ mod tests {
     #[test]
     fn test_return_value() {
         let result = parse_code("_ = 5").unwrap();
-        if let Stmt::Return { value } = &result[0] {
+        if let Stmt::Return { name, value } = &result[0] {
+            assert_eq!(name, &None);
             assert_eq!(*value, Expr::Number(5));
         } else {
             panic!("Expected return statement");
@@ -892,6 +1027,17 @@ mod tests {
     }
 
     #[test]
+    fn test_conditional_optional_else() {
+        let result = parse_code("if(x == 5, { y = 10 })").unwrap();
+        if let Stmt::Expr(Expr::Builtin { name, args }) = &result[0] {
+            assert_eq!(name, "if");
+            assert_eq!(args.len(), 2);
+        } else {
+            panic!("Expected conditional");
+        }
+    }
+
+    #[test]
     fn test_for_loop() {
         let result = parse_code("for(n of arr, { _ = _ + n }, 0)").unwrap();
         if let Stmt::Expr(Expr::Builtin { name, args }) = &result[0] {
@@ -899,6 +1045,17 @@ mod tests {
             assert_eq!(args.len(), 4);
         } else {
             panic!("Expected for loop");
+        }
+    }
+
+    #[test]
+    fn test_for_loop_no_initial() {
+        let result = parse_code("for(n of arr, { x = x + n })").unwrap();
+        if let Stmt::Expr(Expr::Builtin { name, args }) = &result[0] {
+            assert_eq!(name, "for");
+            assert_eq!(args.len(), 3);
+        } else {
+            panic!("Expected for loop without initial value");
         }
     }
 
