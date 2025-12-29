@@ -25,6 +25,10 @@ pub enum Token {
     Of,
     Input,
     Len,
+    Max,
+    Min,
+    Floor,
+    Ceil,
 
     // Literals - actual values
     Number(i64),           // Numbers like 5, -10 (integers only)
@@ -424,6 +428,10 @@ impl Lexer {
             "of" => Token::Of,
             "input" => Token::Input,
             "len" => Token::Len,
+            "max" => Token::Max,
+            "min" => Token::Min,
+            "floor" => Token::Floor,
+            "ceil" => Token::Ceil,
             "true" => Token::True,
             "false" => Token::False,
             _ => Token::Identifier(result),
@@ -693,12 +701,16 @@ mod tests {
 
     #[test]
     fn test_keywords() {
-        let mut lexer = Lexer::new("if for of input len");
+        let mut lexer = Lexer::new("if for of input len max min floor ceil");
         assert_eq!(lexer.next_token(), Token::If);
         assert_eq!(lexer.next_token(), Token::For);
         assert_eq!(lexer.next_token(), Token::Of);
         assert_eq!(lexer.next_token(), Token::Input);
         assert_eq!(lexer.next_token(), Token::Len);
+        assert_eq!(lexer.next_token(), Token::Max);
+        assert_eq!(lexer.next_token(), Token::Min);
+        assert_eq!(lexer.next_token(), Token::Floor);
+        assert_eq!(lexer.next_token(), Token::Ceil);
     }
 
     #[test]

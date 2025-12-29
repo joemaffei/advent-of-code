@@ -535,6 +535,50 @@ impl Parser {
                     args: vec![arg],
                 })
             }
+            Token::Max => {
+                // Builtin function: max(a, b)
+                self.consume(Token::LeftParen, "Expected '(' after 'max'")?;
+                let arg1 = self.parse_expression()?;
+                self.consume(Token::Comma, "Expected ',' after first max argument")?;
+                let arg2 = self.parse_expression()?;
+                self.consume(Token::RightParen, "Expected ')' after max arguments")?;
+                Ok(Expr::Builtin {
+                    name: "max".to_string(),
+                    args: vec![arg1, arg2],
+                })
+            }
+            Token::Min => {
+                // Builtin function: min(a, b)
+                self.consume(Token::LeftParen, "Expected '(' after 'min'")?;
+                let arg1 = self.parse_expression()?;
+                self.consume(Token::Comma, "Expected ',' after first min argument")?;
+                let arg2 = self.parse_expression()?;
+                self.consume(Token::RightParen, "Expected ')' after min arguments")?;
+                Ok(Expr::Builtin {
+                    name: "min".to_string(),
+                    args: vec![arg1, arg2],
+                })
+            }
+            Token::Floor => {
+                // Builtin function: floor(...)
+                self.consume(Token::LeftParen, "Expected '(' after 'floor'")?;
+                let arg = self.parse_expression()?;
+                self.consume(Token::RightParen, "Expected ')' after floor argument")?;
+                Ok(Expr::Builtin {
+                    name: "floor".to_string(),
+                    args: vec![arg],
+                })
+            }
+            Token::Ceil => {
+                // Builtin function: ceil(...)
+                self.consume(Token::LeftParen, "Expected '(' after 'ceil'")?;
+                let arg = self.parse_expression()?;
+                self.consume(Token::RightParen, "Expected ')' after ceil argument")?;
+                Ok(Expr::Builtin {
+                    name: "ceil".to_string(),
+                    args: vec![arg],
+                })
+            }
             _ => Err(self.error(&format!("Unexpected token: {:?}", token))),
         }
     }

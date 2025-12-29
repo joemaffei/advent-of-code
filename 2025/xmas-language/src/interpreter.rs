@@ -954,6 +954,48 @@ impl Interpreter {
                     _ => Err("len requires array or string".to_string()),
                 }
             }
+            "max" => {
+                if args.len() != 2 {
+                    return Err("max requires 2 arguments".to_string());
+                }
+                let val1 = self.evaluate_expression(&args[0])?;
+                let val2 = self.evaluate_expression(&args[1])?;
+                match (val1, val2) {
+                    (Value::Number(a), Value::Number(b)) => Ok(Value::Number(a.max(b))),
+                    _ => Err("max requires 2 numbers".to_string()),
+                }
+            }
+            "min" => {
+                if args.len() != 2 {
+                    return Err("min requires 2 arguments".to_string());
+                }
+                let val1 = self.evaluate_expression(&args[0])?;
+                let val2 = self.evaluate_expression(&args[1])?;
+                match (val1, val2) {
+                    (Value::Number(a), Value::Number(b)) => Ok(Value::Number(a.min(b))),
+                    _ => Err("min requires 2 numbers".to_string()),
+                }
+            }
+            "floor" => {
+                if args.len() != 1 {
+                    return Err("floor requires 1 argument".to_string());
+                }
+                let value = self.evaluate_expression(&args[0])?;
+                match value {
+                    Value::Number(n) => Ok(Value::Number(n)), // For integers, floor is a no-op
+                    _ => Err("floor requires a number".to_string()),
+                }
+            }
+            "ceil" => {
+                if args.len() != 1 {
+                    return Err("ceil requires 1 argument".to_string());
+                }
+                let value = self.evaluate_expression(&args[0])?;
+                match value {
+                    Value::Number(n) => Ok(Value::Number(n)), // For integers, ceil is a no-op
+                    _ => Err("ceil requires a number".to_string()),
+                }
+            }
             _ => Err(format!("Unknown builtin function: {}", name)),
         }
     }

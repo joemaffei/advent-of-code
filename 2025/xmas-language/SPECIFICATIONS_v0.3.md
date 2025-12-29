@@ -276,6 +276,48 @@ len(input)          // [numLines, numColumns]
 len(input[0])       // characters in first line
 ```
 
+### max(a, b)
+
+Returns the maximum of two numbers:
+
+```xmas
+max(5, 10)          // 10
+max(0 - 3, 0 - 7)   // -3
+max(0, 0)           // 0
+```
+
+### min(a, b)
+
+Returns the minimum of two numbers:
+
+```xmas
+min(5, 10)          // 5
+min(0 - 3, 0 - 7)   // -7
+min(0, 0)           // 0
+```
+
+### floor(n)
+
+Returns the floor of a number. Since xmas currently only supports integers, this function returns the number unchanged:
+
+```xmas
+floor(5)            // 5
+floor(0 - 3)        // -3
+```
+
+**Note**: This function is provided for completeness and future float support. For integers, `floor(n)` is equivalent to `n`.
+
+### ceil(n)
+
+Returns the ceiling of a number. Since xmas currently only supports integers, this function returns the number unchanged:
+
+```xmas
+ceil(5)             // 5
+ceil(0 - 3)         // -3
+```
+
+**Note**: This function is provided for completeness and future float support. For integers, `ceil(n)` is equivalent to `n`.
+
 ## Array Operations
 
 ### Concatenation
@@ -343,6 +385,8 @@ for(line of input.rows(), {
   - String building
   - Complex state accumulation
 - Extended `~` operator to convert booleans to numbers: `true` → `1`, `false` → `0`
+- Added `max(a, b)` and `min(a, b)` functions for numeric comparisons
+- Added `floor(n)` and `ceil(n)` functions (no-op for integers, provided for future float support)
 
 ### v0.2
 
